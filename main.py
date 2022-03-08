@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Tuple
 from parser import Parser
 
 
+POMAGAM_CACHE_FILENAME = '.pomagam_cache.json'
 # map_id=1 – production, map_id=2 – tests
 POMAGAM_URL = 'https://pomag.am/index.php' \
               '?rest_route=/wpgmza/v1/markers' \
@@ -132,6 +133,61 @@ def pois_to_geojson(pois: List[Dict[str, Any]]) -> Dict[str, Any]:
     return geojson
 
 
+def diff_cache(pois: List[Dict], update: bool = True) -> Dict[str, List[Dict]]:
+    """
+    Comapare given pois with cached pois.
+    :return: dict with {'created': {}, 'modified': {}, deleted: {}} pois
+    where for each nested dict: key=poi's id, value=poi
+
+    It doesn't compare by all properties, just by name and description –
+    they are needed to translation
+    """
+    def is_modified(poi_new: Dict[str, Any], poi_old: Dict[str, Any]) -> bool:
+        return any([
+            poi_new['name'] != poi_old['name'],
+            poi_new['description'] != poi_old['description'],
+        ])
+
+    diff = {
+        'created': {},
+        'modified': {},
+        'deleted': {},
+    }
+
+    try:
+        with open(POMAGAM_CACHE_FILENAME, 'r') as f:
+            cache = json.load(f)
+    except Exception:
+        # TODO logging
+        cache = {}
+
+    for poi in pois:
+        poi_id = poi['id']
+        if poi_id not in cache:
+            diff['created'][poi_id] = poi
+        else:
+            poi_cached = cache[poi_id]
+            if is_modified(poi, poi_cached):
+                diff['modified'][poi_id] = poi
+
+            del cache[poi_id]
+
+    diff['deleted'].update(cache)
+
+    if update:
+        try:
+            new_cache = {
+                poi['id']: poi for poi in pois
+            }
+            with open(POMAGAM_CACHE_FILENAME, 'w', encoding='utf-8') as f:
+                json.dump(new_cache, f, ensure_ascii=False, indent=4)
+        except IOError:
+            # TODO logging
+            pass
+
+    return diff
+
+
 def group_by_category(pois: List[Dict[str, Any]]) -> Dict[str, List[Dict]]:
     categorized_pois = {
         v: [] for v in Parser.CATEGORIES.values()
@@ -148,6 +204,8 @@ def main():
     all_pois, invalid_markers = parse_pois(markers)
 
     verified_pois = list(filter(lambda x: x['verified'], all_pois))
+    diff = diff_cache(verified_pois, update=True)
+
     with open('pomagam.geojson', 'w', encoding='utf-8') as f:
         json.dump(
             pois_to_geojson(verified_pois),
