@@ -262,6 +262,7 @@ def main():
         ['name'],
         ['pl', 'en', 'ua', 'ru']
     )
+    tr.update(to_translate)
 
     with open('pomagam.geojson', 'w', encoding='utf-8') as f:
         json.dump(
