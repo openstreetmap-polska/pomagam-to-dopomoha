@@ -15,6 +15,31 @@ class Translation:
         self.gc = gspread.service_account(filename=credential_filename)
         self.spreadsheet = self.gc.open_by_key(spreadsheet_key)
 
+    @staticmethod
+    def create_data_to_translate(
+        data: List[Dict[str, Any]],
+        keys: List[str],
+        lang_codes: List[str]
+    ) -> List[Dict]:
+        """
+        Generate translation data template records to update spreadsheet
+        :param keys: which will be used to translate. Example: ['name'],
+        :param lang_codes: to generate columns with specific languages
+        Example: ['pl', 'en'] produces ['name', 'name:pl', 'name:en'] columns
+        """
+        translation_data = []
+        for obj in data:
+            record = {'id': obj['id']}
+            for key in keys:
+                record[key] = obj[key]
+                for lang in lang_codes:
+                    lang_key = f'{key}:{lang}'
+                    record[lang_key] = obj.get(lang_key, '')
+
+            translation_data.append(record)
+
+        return translation_data
+
     def fetch(
         self,
         worksheet: gspread.Worksheet = None,

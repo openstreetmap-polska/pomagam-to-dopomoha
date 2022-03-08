@@ -257,6 +257,11 @@ def main():
     translation_data = filter_translation(translation_data, pois_diff)
 
     update_poi_translation(verified_pois, translation_data)
+    to_translate = Translation.create_data_to_translate(
+        verified_pois,
+        ['name'],
+        ['pl', 'en', 'ua', 'ru']
+    )
 
     with open('pomagam.geojson', 'w', encoding='utf-8') as f:
         json.dump(
