@@ -18,12 +18,14 @@ class Translation:
     def fetch(
         self,
         worksheet: gspread.Worksheet = None,
-        head=1
+        head=1,
+        numericise_ignore=['all']
     ) -> List[Dict[str, Any]]:
         """
         Read whole spreadsheet from given worksheet
         :param worksheet: if none it uses default 'sheet1' worksheet
         :param head: row number with headers
+        :param numericise_ignore: ignore converting text to number
         :return: all data from workshet in format: [
             {'col1': val1, 'col2': val2},
             {'col1': val1, 'col2': val2},
@@ -32,7 +34,10 @@ class Translation:
         if worksheet is None:
             worksheet = self.spreadsheet.sheet1
 
-        return worksheet.get_all_records(head=head)
+        return worksheet.get_all_records(
+            head=head,
+            numericise_ignore=numericise_ignore
+        )
 
     @staticmethod
     def _rstrip_list(data: List[Any]):
