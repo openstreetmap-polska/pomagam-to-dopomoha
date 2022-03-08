@@ -2,9 +2,11 @@ import requests
 
 import json
 
+from os import environ
 from typing import Any, Dict, List, Tuple
 
 from parser import Parser
+from translation import Translation
 
 
 POMAGAM_CACHE_FILENAME = '.pomagam_cache.json'
@@ -188,6 +190,24 @@ def diff_cache(pois: List[Dict], update: bool = True) -> Dict[str, List[Dict]]:
     return diff
 
 
+def filter_translation(
+    translation_data: List[Dict[str, Any]],
+    diff: Dict[str, List[Dict]]
+) -> List[Dict[str, Any]]:
+    """
+    Removes modified and deleted records from translation_data
+    based on object id from pois cache diff.
+
+    :param translation_data: data from fetch function
+    :param diff: {'created': {}, 'modified': {}, 'deleted': {}} dictionary
+    to filter translation records which should be removed
+    """
+    ids = {poi['id'] for poi in diff['modified']}
+    ids.update({poi['id'] for poi in diff['deleted']})
+
+    return [record for record in translation_data if record['id'] not in ids]
+
+
 def group_by_category(pois: List[Dict[str, Any]]) -> Dict[str, List[Dict]]:
     categorized_pois = {
         v: [] for v in Parser.CATEGORIES.values()
@@ -204,7 +224,14 @@ def main():
     all_pois, invalid_markers = parse_pois(markers)
 
     verified_pois = list(filter(lambda x: x['verified'], all_pois))
-    diff = diff_cache(verified_pois, update=True)
+    pois_diff = diff_cache(verified_pois, update=True)
+
+    tr = Translation(
+        environ['GOOGLE_API_CREDENTIAL_FILENAME'],
+        environ['GOOGLE_API_SPREADSHEET_ID']
+    )
+    translation_data = tr.fetch()
+    translation_data = filter_translation(translation_data, pois_diff)
 
     with open('pomagam.geojson', 'w', encoding='utf-8') as f:
         json.dump(
