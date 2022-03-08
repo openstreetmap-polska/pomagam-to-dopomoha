@@ -208,6 +208,29 @@ def filter_translation(
     return [record for record in translation_data if record['id'] not in ids]
 
 
+def update_poi_translation(
+    pois: List[Dict[str, Any]],
+    translation_data: List[Dict[str, Any]]
+) -> None:
+    """
+    Update poi properties with translated strings
+    It won't add lang properties to the poi if the value is empty
+    """
+    def clean_record(record: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Removes empty properties
+        """
+        return {k: v for k, v in record.items() if v}
+
+    translation = {
+        record['id']: clean_record(record) for record in translation_data
+    }
+    for poi in pois:
+        poi_id = poi['id']
+        if poi_id in translation:
+            poi.update(translation[poi_id])
+
+
 def group_by_category(pois: List[Dict[str, Any]]) -> Dict[str, List[Dict]]:
     categorized_pois = {
         v: [] for v in Parser.CATEGORIES.values()
@@ -232,6 +255,8 @@ def main():
     )
     translation_data = tr.fetch()
     translation_data = filter_translation(translation_data, pois_diff)
+
+    update_poi_translation(verified_pois, translation_data)
 
     with open('pomagam.geojson', 'w', encoding='utf-8') as f:
         json.dump(
