@@ -273,10 +273,10 @@ def main():
         )
 
     # Write to multiple files (per category)
-    # categorized_pois = group_by_category(verified_pois)
-    # for category, pois in categorized_pois.items():
-    #     with open(f'pomagam-{category}.geojson', 'w', encoding='utf-8') as f:
-    #         json.dump(pois_to_geojson(pois), f, ensure_ascii=False, indent=4)
+    categorized_pois = group_by_category(verified_pois)
+    for category, pois in categorized_pois.items():
+        with open(f'pomagam-{category}.geojson', 'w', encoding='utf-8') as f:
+            json.dump(pois_to_geojson(pois), f, ensure_ascii=False, indent=4)
 
     with open('pomagam_invalid.json', 'w', encoding='utf-8') as f:
         json.dump(invalid_markers, f, ensure_ascii=False, indent=4)
