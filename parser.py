@@ -65,8 +65,8 @@ class Parser:
             return False
             # raise ValueError('Verify cannot be empty!')
 
-        # TODO replace <space> with other possible whitespace characters
-        clean_value = value.replace(' ', '').strip().lower()
+        # Remove all whitespace characters and lower
+        clean_value = ''.join(value.strip().split()).lower()
 
         if clean_value in TRUE_VALUES:
             return True
