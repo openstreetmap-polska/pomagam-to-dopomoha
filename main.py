@@ -26,7 +26,7 @@ FIELD_PARSER = {
     'name': Parser.parse_name,
     'description': Parser.parse_description,
     'phone': Parser.parse_phone,
-    'address': Parser.parse_address,
+    'addr': Parser.parse_addr,
     'opening_hours': Parser.parse_opening_hours,
     'website': Parser.parse_website,
 }
@@ -58,7 +58,7 @@ def remap_filter_attributes(
 
         # marker data
         'title': 'name',
-        'address': 'address',
+        'address': 'addr',
         'lat': 'lat',
         'lng': 'lng',
         'description': 'description',

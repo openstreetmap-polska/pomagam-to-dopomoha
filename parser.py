@@ -113,7 +113,7 @@ class Parser:
         return str(value) if value else None
 
     @staticmethod
-    def parse_address(value: Any) -> str:
+    def parse_addr(value: Any) -> str:
         # Currently not used
         return str(value) if value else None
 
