@@ -2,11 +2,11 @@ import requests
 
 import json
 
-from os import environ
+# from os import environ
 from typing import Any, Dict, List, Tuple
 
 from parser import Parser
-from translation import Translation
+# from translation import Translation
 
 
 POMAGAM_CACHE_FILENAME = '.pomagam_cache.json'
@@ -247,22 +247,22 @@ def main():
     all_pois, invalid_markers = parse_pois(markers)
 
     verified_pois = list(filter(lambda x: x['verified'], all_pois))
-    pois_diff = diff_cache(verified_pois, update=True)
-
-    tr = Translation(
-        environ['GOOGLE_API_CREDENTIAL_FILENAME'],
-        environ['GOOGLE_API_SPREADSHEET_ID']
-    )
-    translation_data = tr.fetch()
-    translation_data = filter_translation(translation_data, pois_diff)
-
-    update_poi_translation(verified_pois, translation_data)
-    to_translate = Translation.create_data_to_translate(
-        verified_pois,
-        ['name'],
-        ['pl', 'en', 'ua', 'ru']
-    )
-    tr.update(to_translate)
+    # pois_diff = diff_cache(verified_pois, update=True)
+    #
+    # tr = Translation(
+    #     environ['GOOGLE_API_CREDENTIAL_FILENAME'],
+    #     environ['GOOGLE_API_SPREADSHEET_ID']
+    # )
+    # translation_data = tr.fetch()
+    # translation_data = filter_translation(translation_data, pois_diff)
+    #
+    # update_poi_translation(verified_pois, translation_data)
+    # to_translate = Translation.create_data_to_translate(
+    #     verified_pois,
+    #     ['name', 'description'],
+    #     ['pl', 'en', 'ua', 'ru']
+    # )
+    # tr.update(to_translate)
 
     with open('pomagam.geojson', 'w', encoding='utf-8') as f:
         json.dump(
