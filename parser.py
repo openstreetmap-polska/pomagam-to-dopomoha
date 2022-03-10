@@ -1,3 +1,5 @@
+from lxml.html import document_fromstring
+
 from typing import Any
 
 
@@ -102,9 +104,27 @@ class Parser:
 
     @staticmethod
     def parse_description(value: Any) -> str:
-        # TODO check is there any max_length limit
-        # TODO sanitize it
-        return str(value) if value else None
+        if not value:
+            return None
+
+        try:
+            doc = document_fromstring(value)
+            # Add new lines to end of div/br elements
+            for elem in doc.xpath('//*[self::div or self::br]'):
+                elem.tail = '\n' + elem.tail if elem.tail else '\n'
+
+            # Add new line with '-' char to list elements
+            for li in doc.xpath('*//li'):
+                li.text = '\n- ' + li.text if li.text else '\n'
+
+            value = doc.text_content()
+            value = value.replace(', -', ',\n-')  # fix some lists
+
+        except Exception:
+            # TODO unknown, log it
+            pass
+
+        return str(value)
 
     @staticmethod
     def parse_phone(value: Any) -> str:
