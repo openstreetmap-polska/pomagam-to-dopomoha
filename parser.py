@@ -1,3 +1,4 @@
+from bleach import clean
 from lxml.html import document_fromstring
 
 from typing import Any
@@ -98,9 +99,8 @@ class Parser:
     def parse_name(value: Any) -> str:
         if not value:
             raise ValueError('Name cannot be empty!')
-        # TODO check is there any max_length limit
-        # TODO sanitize it
-        return str(value)
+
+        return clean(value, strip=True)
 
     @staticmethod
     def parse_description(value: Any) -> str:
@@ -124,18 +124,22 @@ class Parser:
             # TODO unknown, log it
             pass
 
-        return str(value)
+        return clean(value, strip=True)
 
     @staticmethod
     def parse_phone(value: Any) -> str:
         # TODO exctract digits and reformat using dopomoha expected formatting
-        # TODO if missing
-        return str(value) if value else None
+        if not value:
+            return None
+
+        return clean(value, strip=True)
 
     @staticmethod
     def parse_addr(value: Any) -> str:
-        # Currently not used
-        return str(value) if value else None
+        if not value:
+            return None
+
+        return clean(value, strip=True)
 
     @staticmethod
     def parse_website(value: Any) -> str:
@@ -145,4 +149,7 @@ class Parser:
     @staticmethod
     def parse_opening_hours(value: Any) -> str:
         # Currently not used
-        return str(value) if value else None
+        if not value:
+            return None
+
+        return clean(value, strip=True)
