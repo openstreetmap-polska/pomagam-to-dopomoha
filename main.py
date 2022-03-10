@@ -127,9 +127,9 @@ def pois_to_geojson(pois: List[Dict[str, Any]]) -> Dict[str, Any]:
                 'coordinates': [poi['lng'], poi['lat']]
             },
         }
-        del poi['lng']
-        del poi['lat']
         feature['properties'] = {k: v for k, v in poi.items()}
+        del feature['properties']['lng']
+        del feature['properties']['lat']
         geojson['features'].append(feature)
 
     return geojson
