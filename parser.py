@@ -5,7 +5,13 @@ class Parser:
     CATEGORIES = {
         '1': 'charityDropOff',
         '2': 'accommodation',
-        '3': 'govermentCharity'
+        '3': 'govermentCharity',
+        '4': 'psychologicalAssistance',
+        '5': 'legalAssistance',
+        '6': 'medicalAssistance',
+        '7': 'animalAssistance',
+        '8': 'childcare',
+        '9': 'transport',
     }
 
     @staticmethod
