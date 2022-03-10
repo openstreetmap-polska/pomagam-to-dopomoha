@@ -3,6 +3,7 @@ import requests
 import json
 
 # from os import environ
+from os import path
 from typing import Any, Dict, List, Tuple
 
 from parser import Parser
@@ -10,6 +11,7 @@ from parser import Parser
 
 
 POMAGAM_CACHE_FILENAME = '.pomagam_cache.json'
+POMAGAM_DATA_DIR = 'pomagam_data'
 # map_id=1 – production, map_id=2 – tests
 POMAGAM_URL = 'https://pomag.am/index.php' \
               '?rest_route=/wpgmza/v1/markers' \
@@ -264,7 +266,8 @@ def main():
     # )
     # tr.update(to_translate)
 
-    with open('pomagam.geojson', 'w', encoding='utf-8') as f:
+    pomagam_all_filename = path.join(POMAGAM_DATA_DIR, 'pomagam.geojson')
+    with open(pomagam_all_filename, 'w', encoding='utf-8') as f:
         json.dump(
             pois_to_geojson(verified_pois),
             f,
@@ -275,10 +278,18 @@ def main():
     # Write to multiple files (per category)
     categorized_pois = group_by_category(verified_pois)
     for category, pois in categorized_pois.items():
-        with open(f'pomagam-{category}.geojson', 'w', encoding='utf-8') as f:
+        pomagam_category_filename = path.join(
+            POMAGAM_DATA_DIR,
+            f'pomagam-{category}.geojson'
+        )
+        with open(pomagam_category_filename, 'w', encoding='utf-8') as f:
             json.dump(pois_to_geojson(pois), f, ensure_ascii=False, indent=4)
 
-    with open('pomagam_invalid.json', 'w', encoding='utf-8') as f:
+    pomagam_invalid_filename = path.join(
+        POMAGAM_DATA_DIR,
+        'pomagam_invalid.json'
+    )
+    with open(pomagam_invalid_filename, 'w', encoding='utf-8') as f:
         json.dump(invalid_markers, f, ensure_ascii=False, indent=4)
 
 
