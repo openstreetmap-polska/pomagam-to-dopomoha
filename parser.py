@@ -1,6 +1,8 @@
 from bleach import clean
 from lxml.html import document_fromstring
 
+import logging
+
 from typing import Any
 
 
@@ -120,15 +122,14 @@ class Parser:
             value = doc.text_content()
             value = value.replace(', -', ',\n-')  # fix some lists
 
-        except Exception:
-            # TODO unknown, log it
+        except Exception as e:
+            logging.error(f'Parsing description error: {e}')
             pass
 
         return clean(value, strip=True)
 
     @staticmethod
     def parse_phone(value: Any) -> str:
-        # TODO exctract digits and reformat using dopomoha expected formatting
         if not value:
             return None
 

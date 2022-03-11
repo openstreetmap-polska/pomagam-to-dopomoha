@@ -1,6 +1,7 @@
 import requests
 
 import json
+import logging
 
 # from os import environ
 from os import path
@@ -105,6 +106,7 @@ def parse_pois(markers: List[Dict[str, Any]]) -> Tuple[List, List]:
                 poi[key] = FIELD_PARSER[key](value)
 
             except ValueError as error:
+                logging.debug(f'Error with parsing poi [{key}]: {error}')
                 errors[key] = str(error)
 
         if errors:
@@ -161,8 +163,8 @@ def diff_cache(pois: List[Dict], update: bool = True) -> Dict[str, List[Dict]]:
     try:
         with open(POMAGAM_CACHE_FILENAME, 'r') as f:
             cache = json.load(f)
-    except Exception:
-        # TODO logging
+    except Exception as e:
+        logging.error(f'Error with reading poi cache: {e}')
         cache = {}
 
     for poi in pois:
@@ -185,8 +187,8 @@ def diff_cache(pois: List[Dict], update: bool = True) -> Dict[str, List[Dict]]:
             }
             with open(POMAGAM_CACHE_FILENAME, 'w', encoding='utf-8') as f:
                 json.dump(new_cache, f, ensure_ascii=False, indent=4)
-        except IOError:
-            # TODO logging
+        except IOError as e:
+            logging.error(f'Error with caching poi: {e}')
             pass
 
     return diff
@@ -244,11 +246,20 @@ def group_by_category(pois: List[Dict[str, Any]]) -> Dict[str, List[Dict]]:
 
 
 def main():
+    logging.basicConfig(
+        format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
+        datefmt='%Y-%m-%d,%H:%M:%S',
+        level=logging.INFO
+    )
+
+    logging.info('Downloading markers from pomag.am ' + POMAGAM_URL)
     raw_markers = download_markers()
+    logging.info(f'Downloaded: {len(raw_markers)} markers.')
     markers = remap_filter_attributes(raw_markers)
     all_pois, invalid_markers = parse_pois(markers)
-
+    logging.info(f'Filtered {len(invalid_markers)} invalid markers.')
     verified_pois = list(filter(lambda x: x['verified'], all_pois))
+    logging.info(f'Filtered {len(verified_pois)} verified pois.')
     # pois_diff = diff_cache(verified_pois, update=True)
     #
     # tr = Translation(
@@ -274,7 +285,7 @@ def main():
             ensure_ascii=False,
             indent=4
         )
-
+    logging.info('Saved all poi data to: ' + pomagam_all_filename)
     # Write to multiple files (per category)
     categorized_pois = group_by_category(verified_pois)
     for category, pois in categorized_pois.items():
@@ -285,12 +296,16 @@ def main():
         with open(pomagam_category_filename, 'w', encoding='utf-8') as f:
             json.dump(pois_to_geojson(pois), f, ensure_ascii=False, indent=4)
 
+    categories = ','.join(categorized_pois.keys())
+    logging.info(f'Saved data to multiple files per category: {categories}')
     pomagam_invalid_filename = path.join(
         POMAGAM_DATA_DIR,
         'pomagam_invalid.json'
     )
     with open(pomagam_invalid_filename, 'w', encoding='utf-8') as f:
         json.dump(invalid_markers, f, ensure_ascii=False, indent=4)
+
+    logging.info(f'Saved invalid markers to ' + pomagam_invalid_filename)
 
 
 if __name__ == '__main__':
