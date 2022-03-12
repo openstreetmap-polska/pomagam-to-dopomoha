@@ -133,11 +133,17 @@ class Parser:
         if not value:
             return None
 
+        if str(value).strip().lower() in ('brak', 'nie'):
+            return None
+
         return clean(value, strip=True)
 
     @staticmethod
     def parse_addr(value: Any) -> str:
         if not value:
+            return None
+
+        if str(value).strip().lower() in ('brak', 'nie'):
             return None
 
         return clean(value, strip=True)
